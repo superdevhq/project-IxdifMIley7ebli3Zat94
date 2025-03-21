@@ -16,7 +16,7 @@ const Dashboard = () => {
   const totalRevenue = deals
     .filter(deal => deal.stage === "Closed Won")
     .reduce((sum, deal) => sum + parseInt(deal.value.replace(/[^0-9]/g, "")), 0);
-
+  
   const activeDeals = deals.filter(deal => 
     !["Closed Won", "Closed Lost"].includes(deal.stage)
   ).length;
@@ -55,7 +55,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <Stats stats={stats} />
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -70,7 +70,7 @@ const Dashboard = () => {
             <CompanyList limit={5} />
           </CardContent>
         </Card>
-
+        
         <Card className="border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-semibold">Recent Contacts</CardTitle>
@@ -85,7 +85,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-
+      
       <Card className="border-none shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-lg font-semibold">Deal Pipeline</CardTitle>
