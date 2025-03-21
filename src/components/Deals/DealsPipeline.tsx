@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Plus, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Trash2, Edit, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import DealForm from "./DealForm";
+import DealDetails from "./DealDetails";
 
 // Mock data for deals
-const mockDeals = [
+const initialDeals = [
   {
     id: 1,
     title: "Enterprise Software License",
@@ -79,6 +92,17 @@ const mockDeals = [
   },
 ];
 
+// Mock companies for the form
+const mockCompanies = [
+  { id: 1, name: "Acme Corporation" },
+  { id: 2, name: "Globex Industries" },
+  { id: 3, name: "Stark Enterprises" },
+  { id: 4, name: "Wayne Enterprises" },
+  { id: 5, name: "Umbrella Corporation" },
+  { id: 6, name: "Cyberdyne Systems" },
+  { id: 7, name: "Oscorp Industries" },
+];
+
 // Define pipeline stages
 const stages = [
   { id: "discovery", name: "Discovery", color: "bg-gray-100" },
@@ -90,10 +114,18 @@ const stages = [
 ];
 
 const DealsPipeline = () => {
+  const { toast } = useToast();
+  const [deals, setDeals] = useState(initialDeals);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<any>(null);
+  const [draggedDeal, setDraggedDeal] = useState<any>(null);
   
   // Filter deals based on search term
-  const filteredDeals = mockDeals.filter(deal => 
+  const filteredDeals = deals.filter(deal => 
     deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.company.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -104,7 +136,7 @@ const DealsPipeline = () => {
       deal => deal.stage.toLowerCase() === stage.name.toLowerCase()
     );
     return acc;
-  }, {} as Record<string, typeof mockDeals>);
+  }, {} as Record<string, typeof initialDeals>);
 
   // Calculate total value by stage
   const totalValueByStage = Object.entries(dealsByStage).reduce((acc, [stage, deals]) => {
@@ -113,6 +145,91 @@ const DealsPipeline = () => {
     }, 0);
     return acc;
   }, {} as Record<string, number>);
+
+  const handleAddDeal = () => {
+    setIsAddFormOpen(true);
+  };
+
+  const handleEditDeal = (deal: any) => {
+    setSelectedDeal(deal);
+    setIsEditFormOpen(true);
+  };
+
+  const handleViewDetails = (deal: any) => {
+    setSelectedDeal(deal);
+    setIsDetailsOpen(true);
+  };
+
+  const handleDeleteDeal = (deal: any) => {
+    setSelectedDeal(deal);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedDeal) {
+      setDeals(deals.filter(deal => deal.id !== selectedDeal.id));
+      toast({
+        title: "Deal deleted",
+        description: `${selectedDeal.title} has been removed`,
+      });
+      setIsDeleteDialogOpen(false);
+      setSelectedDeal(null);
+    }
+  };
+
+  const saveDeal = (dealData: any) => {
+    if (dealData.id && deals.some(deal => deal.id === dealData.id)) {
+      // Update existing deal
+      setDeals(deals.map(deal => 
+        deal.id === dealData.id ? dealData : deal
+      ));
+    } else {
+      // Add new deal
+      setDeals([...deals, dealData]);
+    }
+  };
+
+  // Drag and drop functionality
+  const handleDragStart = (deal: any) => {
+    setDraggedDeal(deal);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, stageName: string) => {
+    e.preventDefault();
+    
+    if (draggedDeal) {
+      // Update the deal's stage
+      const updatedDeals = deals.map(deal => {
+        if (deal.id === draggedDeal.id) {
+          // Update probability based on new stage
+          let probability = deal.probability;
+          
+          if (stageName === "Discovery") probability = 10;
+          else if (stageName === "Qualified") probability = 20;
+          else if (stageName === "Proposal") probability = 50;
+          else if (stageName === "Negotiation") probability = 75;
+          else if (stageName === "Closed Won") probability = 100;
+          else if (stageName === "Closed Lost") probability = 0;
+          
+          return { ...deal, stage: stageName, probability };
+        }
+        return deal;
+      });
+      
+      setDeals(updatedDeals);
+      
+      toast({
+        title: "Deal moved",
+        description: `${draggedDeal.title} moved to ${stageName}`,
+      });
+      
+      setDraggedDeal(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -127,7 +244,7 @@ const DealsPipeline = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button className="shrink-0">
+        <Button className="shrink-0" onClick={handleAddDeal}>
           <Plus className="h-4 w-4 mr-2" />
           Add Deal
         </Button>
@@ -135,7 +252,12 @@ const DealsPipeline = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {stages.map((stage) => (
-          <div key={stage.id} className="flex flex-col h-full">
+          <div 
+            key={stage.id} 
+            className="flex flex-col h-full"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, stage.name)}
+          >
             <div className={`p-3 rounded-t-md ${stage.color}`}>
               <div className="flex items-center justify-between">
                 <h3 className="font-medium">{stage.name}</h3>
@@ -149,7 +271,12 @@ const DealsPipeline = () => {
             </div>
             <div className="flex-1 bg-gray-50 p-2 rounded-b-md min-h-[400px]">
               {dealsByStage[stage.name]?.map((deal) => (
-                <Card key={deal.id} className="mb-2 border-none shadow-sm">
+                <Card 
+                  key={deal.id} 
+                  className="mb-2 border-none shadow-sm cursor-move"
+                  draggable
+                  onDragStart={() => handleDragStart(deal)}
+                >
                   <CardContent className="p-3">
                     <div className="flex items-start justify-between">
                       <div>
@@ -164,9 +291,21 @@ const DealsPipeline = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewDetails(deal)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditDeal(deal)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDeleteDeal(deal)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -191,6 +330,60 @@ const DealsPipeline = () => {
           </div>
         ))}
       </div>
+
+      {/* Add Deal Form */}
+      <DealForm
+        isOpen={isAddFormOpen}
+        onClose={() => setIsAddFormOpen(false)}
+        onSave={saveDeal}
+        companies={mockCompanies}
+        stages={stages}
+      />
+
+      {/* Edit Deal Form */}
+      {selectedDeal && (
+        <DealForm
+          isOpen={isEditFormOpen}
+          onClose={() => {
+            setIsEditFormOpen(false);
+            setSelectedDeal(null);
+          }}
+          onSave={saveDeal}
+          initialData={selectedDeal}
+          companies={mockCompanies}
+          stages={stages}
+        />
+      )}
+
+      {/* Deal Details */}
+      {selectedDeal && (
+        <DealDetails
+          isOpen={isDetailsOpen}
+          onClose={() => {
+            setIsDetailsOpen(false);
+            setSelectedDeal(null);
+          }}
+          deal={selectedDeal}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedDeal?.title}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedDeal(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

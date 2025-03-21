@@ -2,38 +2,33 @@
 import { DollarSign, Building2, Users, BarChart3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-const Stats = () => {
-  // Mock data for stats
-  const stats = [
-    {
-      title: "Total Revenue",
-      value: "$24,780",
-      change: "+12.5%",
-      icon: <DollarSign className="h-5 w-5" />,
-      color: "bg-blue-50 text-blue-600",
-    },
-    {
-      title: "Companies",
-      value: "42",
-      change: "+8.2%",
-      icon: <Building2 className="h-5 w-5" />,
-      color: "bg-green-50 text-green-600",
-    },
-    {
-      title: "Contacts",
-      value: "128",
-      change: "+24.3%",
-      icon: <Users className="h-5 w-5" />,
-      color: "bg-purple-50 text-purple-600",
-    },
-    {
-      title: "Active Deals",
-      value: "16",
-      change: "+4.6%",
-      icon: <BarChart3 className="h-5 w-5" />,
-      color: "bg-orange-50 text-orange-600",
-    },
-  ];
+interface StatItem {
+  title: string;
+  value: string;
+  change: string;
+  icon: string;
+  color: string;
+}
+
+interface StatsProps {
+  stats: StatItem[];
+}
+
+const Stats = ({ stats }: StatsProps) => {
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case "dollar":
+        return <DollarSign className="h-5 w-5" />;
+      case "building":
+        return <Building2 className="h-5 w-5" />;
+      case "users":
+        return <Users className="h-5 w-5" />;
+      case "chart":
+        return <BarChart3 className="h-5 w-5" />;
+      default:
+        return <DollarSign className="h-5 w-5" />;
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -49,7 +44,7 @@ const Stats = () => {
                 </p>
               </div>
               <div className={`p-3 rounded-full ${stat.color}`}>
-                {stat.icon}
+                {getIcon(stat.icon)}
               </div>
             </div>
           </CardContent>

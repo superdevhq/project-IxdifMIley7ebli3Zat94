@@ -6,9 +6,51 @@ import CompanyList from "@/components/Companies/CompanyList";
 import DealsPipeline from "@/components/Deals/DealsPipeline";
 import ContactList from "@/components/Contacts/ContactList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useData } from "@/context/DataContext";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { companies, contacts, deals } = useData();
+
+  // Calculate stats
+  const totalRevenue = deals
+    .filter(deal => deal.stage === "Closed Won")
+    .reduce((sum, deal) => sum + parseInt(deal.value.replace(/[^0-9]/g, "")), 0);
+  
+  const activeDeals = deals.filter(deal => 
+    !["Closed Won", "Closed Lost"].includes(deal.stage)
+  ).length;
+
+  const stats = [
+    {
+      title: "Total Revenue",
+      value: `$${totalRevenue.toLocaleString()}`,
+      change: "+12.5%",
+      icon: "dollar",
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      title: "Companies",
+      value: companies.length.toString(),
+      change: "+8.2%",
+      icon: "building",
+      color: "bg-green-50 text-green-600",
+    },
+    {
+      title: "Contacts",
+      value: contacts.length.toString(),
+      change: "+24.3%",
+      icon: "users",
+      color: "bg-purple-50 text-purple-600",
+    },
+    {
+      title: "Active Deals",
+      value: activeDeals.toString(),
+      change: "+4.6%",
+      icon: "chart",
+      color: "bg-orange-50 text-orange-600",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -31,7 +73,7 @@ const Index = () => {
           </div>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <Stats />
+            <Stats stats={stats} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-6">
                 <h2 className="text-lg font-semibold text-gray-700">Recent Companies</h2>
