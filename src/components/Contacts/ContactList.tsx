@@ -25,84 +25,7 @@ import {
 import DataTable from "@/components/ui/DataTable";
 import ContactForm from "./ContactForm";
 import ContactDetails from "./ContactDetails";
-
-// Mock data for contacts
-const initialContacts = [
-  {
-    id: 1,
-    name: "John Smith",
-    email: "john.smith@acme.com",
-    phone: "+1 (555) 123-4567",
-    company: "Acme Corporation",
-    position: "CEO",
-    lastContact: "2023-10-25",
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    email: "sarah.j@globex.com",
-    phone: "+1 (555) 234-5678",
-    company: "Globex Industries",
-    position: "CTO",
-    lastContact: "2023-10-20",
-  },
-  {
-    id: 3,
-    name: "Michael Brown",
-    email: "m.brown@stark.com",
-    phone: "+1 (555) 345-6789",
-    company: "Stark Enterprises",
-    position: "Sales Director",
-    lastContact: "2023-10-18",
-  },
-  {
-    id: 4,
-    name: "Emily Davis",
-    email: "emily.d@wayne.com",
-    phone: "+1 (555) 456-7890",
-    company: "Wayne Enterprises",
-    position: "Marketing Manager",
-    lastContact: "2023-10-15",
-  },
-  {
-    id: 5,
-    name: "David Wilson",
-    email: "d.wilson@umbrella.com",
-    phone: "+1 (555) 567-8901",
-    company: "Umbrella Corporation",
-    position: "Product Manager",
-    lastContact: "2023-10-12",
-  },
-  {
-    id: 6,
-    name: "Jessica Taylor",
-    email: "j.taylor@cyberdyne.com",
-    phone: "+1 (555) 678-9012",
-    company: "Cyberdyne Systems",
-    position: "HR Director",
-    lastContact: "2023-10-10",
-  },
-  {
-    id: 7,
-    name: "Robert Martinez",
-    email: "r.martinez@oscorp.com",
-    phone: "+1 (555) 789-0123",
-    company: "Oscorp Industries",
-    position: "CFO",
-    lastContact: "2023-10-05",
-  },
-];
-
-// Mock companies for the form
-const mockCompanies = [
-  { id: 1, name: "Acme Corporation" },
-  { id: 2, name: "Globex Industries" },
-  { id: 3, name: "Stark Enterprises" },
-  { id: 4, name: "Wayne Enterprises" },
-  { id: 5, name: "Umbrella Corporation" },
-  { id: 6, name: "Cyberdyne Systems" },
-  { id: 7, name: "Oscorp Industries" },
-];
+import { useData } from "@/context/DataContext";
 
 interface ContactListProps {
   limit?: number;
@@ -110,7 +33,7 @@ interface ContactListProps {
 
 const ContactList = ({ limit }: ContactListProps) => {
   const { toast } = useToast();
-  const [contacts, setContacts] = useState(initialContacts);
+  const { contacts, companies, addContact, updateContact, deleteContact } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -157,7 +80,7 @@ const ContactList = ({ limit }: ContactListProps) => {
 
   const confirmDelete = () => {
     if (selectedContact) {
-      setContacts(contacts.filter(contact => contact.id !== selectedContact.id));
+      deleteContact(selectedContact.id);
       toast({
         title: "Contact deleted",
         description: `${selectedContact.name} has been removed`,
@@ -170,14 +93,26 @@ const ContactList = ({ limit }: ContactListProps) => {
   const saveContact = (contactData: any) => {
     if (contactData.id && contacts.some(contact => contact.id === contactData.id)) {
       // Update existing contact
-      setContacts(contacts.map(contact => 
-        contact.id === contactData.id ? contactData : contact
-      ));
+      updateContact(contactData);
+      toast({
+        title: "Contact updated",
+        description: `${contactData.name} has been updated`,
+      });
     } else {
       // Add new contact
-      setContacts([...contacts, contactData]);
+      addContact(contactData);
+      toast({
+        title: "Contact added",
+        description: `${contactData.name} has been added`,
+      });
     }
   };
+
+  // Format companies for the form
+  const companyOptions = companies.map(company => ({
+    id: company.id,
+    name: company.name
+  }));
 
   const columns = [
     {
@@ -260,40 +195,39 @@ const ContactList = ({ limit }: ContactListProps) => {
 
   return (
     <>
-      <Card className="border-none shadow-sm">
-        {!limit && (
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                type="search"
-                placeholder="Search contacts..."
-                className="pl-8 w-full sm:w-[300px] bg-gray-50 border-gray-200"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Button className="shrink-0" onClick={handleAddContact}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Contact
-            </Button>
+      {!limit && (
+        <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Search contacts..."
+              className="pl-8 w-full sm:w-[300px] bg-gray-50 border-gray-200"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-        )}
-        <CardContent className={limit ? "p-0" : "p-0 pt-6"}>
-          <DataTable
-            columns={columns}
-            data={filteredContacts}
-            searchable={false}
-          />
-        </CardContent>
-      </Card>
+          <Button className="shrink-0" onClick={handleAddContact}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Contact
+          </Button>
+        </div>
+      )}
+      
+      <div className={limit ? "p-0" : "p-0 pt-6"}>
+        <DataTable
+          columns={columns}
+          data={filteredContacts}
+          searchable={false}
+        />
+      </div>
 
       {/* Add Contact Form */}
       <ContactForm
         isOpen={isAddFormOpen}
         onClose={() => setIsAddFormOpen(false)}
         onSave={saveContact}
-        companies={mockCompanies}
+        companies={companyOptions}
       />
 
       {/* Edit Contact Form */}
@@ -306,7 +240,7 @@ const ContactList = ({ limit }: ContactListProps) => {
           }}
           onSave={saveContact}
           initialData={selectedContact}
-          companies={mockCompanies}
+          companies={companyOptions}
         />
       )}
 

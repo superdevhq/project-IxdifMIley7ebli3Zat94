@@ -25,73 +25,7 @@ import {
 import DataTable from "@/components/ui/DataTable";
 import CompanyForm from "./CompanyForm";
 import CompanyDetails from "./CompanyDetails";
-
-// Mock data for companies
-const initialCompanies = [
-  {
-    id: 1,
-    name: "Acme Corporation",
-    industry: "Technology",
-    employees: 250,
-    status: "Active",
-    revenue: "$1.2M",
-    location: "New York, USA",
-  },
-  {
-    id: 2,
-    name: "Globex Industries",
-    industry: "Manufacturing",
-    employees: 500,
-    status: "Active",
-    revenue: "$3.4M",
-    location: "Chicago, USA",
-  },
-  {
-    id: 3,
-    name: "Stark Enterprises",
-    industry: "Technology",
-    employees: 1000,
-    status: "Active",
-    revenue: "$8.7M",
-    location: "San Francisco, USA",
-  },
-  {
-    id: 4,
-    name: "Wayne Enterprises",
-    industry: "Finance",
-    employees: 750,
-    status: "Inactive",
-    revenue: "$5.3M",
-    location: "Gotham City, USA",
-  },
-  {
-    id: 5,
-    name: "Umbrella Corporation",
-    industry: "Healthcare",
-    employees: 1200,
-    status: "Active",
-    revenue: "$12.1M",
-    location: "Boston, USA",
-  },
-  {
-    id: 6,
-    name: "Cyberdyne Systems",
-    industry: "Technology",
-    employees: 300,
-    status: "Inactive",
-    revenue: "$2.5M",
-    location: "Los Angeles, USA",
-  },
-  {
-    id: 7,
-    name: "Oscorp Industries",
-    industry: "Research",
-    employees: 450,
-    status: "Active",
-    revenue: "$4.8M",
-    location: "New York, USA",
-  },
-];
+import { useData } from "@/context/DataContext";
 
 interface CompanyListProps {
   limit?: number;
@@ -99,7 +33,7 @@ interface CompanyListProps {
 
 const CompanyList = ({ limit }: CompanyListProps) => {
   const { toast } = useToast();
-  const [companies, setCompanies] = useState(initialCompanies);
+  const { companies, addCompany, updateCompany, deleteCompany } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -137,7 +71,7 @@ const CompanyList = ({ limit }: CompanyListProps) => {
 
   const confirmDelete = () => {
     if (selectedCompany) {
-      setCompanies(companies.filter(company => company.id !== selectedCompany.id));
+      deleteCompany(selectedCompany.id);
       toast({
         title: "Company deleted",
         description: `${selectedCompany.name} has been removed`,
@@ -150,12 +84,18 @@ const CompanyList = ({ limit }: CompanyListProps) => {
   const saveCompany = (companyData: any) => {
     if (companyData.id && companies.some(company => company.id === companyData.id)) {
       // Update existing company
-      setCompanies(companies.map(company => 
-        company.id === companyData.id ? companyData : company
-      ));
+      updateCompany(companyData);
+      toast({
+        title: "Company updated",
+        description: `${companyData.name} has been updated`,
+      });
     } else {
       // Add new company
-      setCompanies([...companies, companyData]);
+      addCompany(companyData);
+      toast({
+        title: "Company added",
+        description: `${companyData.name} has been added`,
+      });
     }
   };
 
@@ -230,33 +170,32 @@ const CompanyList = ({ limit }: CompanyListProps) => {
 
   return (
     <>
-      <Card className="border-none shadow-sm">
-        {!limit && (
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                type="search"
-                placeholder="Search companies..."
-                className="pl-8 w-full sm:w-[300px] bg-gray-50 border-gray-200"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Button className="shrink-0" onClick={handleAddCompany}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Company
-            </Button>
+      {!limit && (
+        <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Search companies..."
+              className="pl-8 w-full sm:w-[300px] bg-gray-50 border-gray-200"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-        )}
-        <CardContent className={limit ? "p-0" : "p-0 pt-6"}>
-          <DataTable
-            columns={columns}
-            data={filteredCompanies}
-            searchable={false}
-          />
-        </CardContent>
-      </Card>
+          <Button className="shrink-0" onClick={handleAddCompany}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Company
+          </Button>
+        </div>
+      )}
+      
+      <div className={limit ? "p-0" : "p-0 pt-6"}>
+        <DataTable
+          columns={columns}
+          data={filteredCompanies}
+          searchable={false}
+        />
+      </div>
 
       {/* Add Company Form */}
       <CompanyForm
