@@ -18,6 +18,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
 
 interface ContactFormProps {
@@ -95,8 +96,14 @@ const ContactForm = ({ isOpen, onClose, onSave, initialData, companies }: Contac
     }, 600);
   };
 
+  // Handle dialog close properly
+  const handleDialogClose = () => {
+    // Ensure we call the parent's onClose
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit" : "Add"} Contact</DialogTitle>
@@ -186,9 +193,11 @@ const ContactForm = ({ isOpen, onClose, onSave, initialData, companies }: Contac
           </div>
           
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : "Save Contact"}
             </Button>

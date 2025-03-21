@@ -18,6 +18,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
 
 interface CompanyFormProps {
@@ -101,8 +102,14 @@ const CompanyForm = ({ isOpen, onClose, onSave, initialData }: CompanyFormProps)
     }, 600);
   };
 
+  // Handle dialog close properly
+  const handleDialogClose = () => {
+    // Ensure we call the parent's onClose
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit" : "Add"} Company</DialogTitle>
@@ -197,9 +204,11 @@ const CompanyForm = ({ isOpen, onClose, onSave, initialData }: CompanyFormProps)
           </div>
           
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : "Save Company"}
             </Button>

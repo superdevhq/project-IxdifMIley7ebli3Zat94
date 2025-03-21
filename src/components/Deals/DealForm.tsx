@@ -19,6 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
 
 interface DealFormProps {
@@ -111,8 +112,14 @@ const DealForm = ({ isOpen, onClose, onSave, initialData, companies, stages }: D
     }, 600);
   };
 
+  // Handle dialog close properly
+  const handleDialogClose = () => {
+    // Ensure we call the parent's onClose
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit" : "Add"} Deal</DialogTitle>
@@ -211,9 +218,11 @@ const DealForm = ({ isOpen, onClose, onSave, initialData, companies, stages }: D
           </div>
           
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : "Save Deal"}
             </Button>

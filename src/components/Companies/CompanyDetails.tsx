@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogClose
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,8 +18,14 @@ interface CompanyDetailsProps {
 }
 
 const CompanyDetails = ({ isOpen, onClose, company }: CompanyDetailsProps) => {
+  // Handle dialog close properly
+  const handleDialogClose = () => {
+    // Ensure we call the parent's onClose
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
@@ -92,7 +99,9 @@ const CompanyDetails = ({ isOpen, onClose, company }: CompanyDetailsProps) => {
         </div>
         
         <DialogFooter>
-          <Button onClick={onClose}>Close</Button>
+          <DialogClose asChild>
+            <Button>Close</Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
