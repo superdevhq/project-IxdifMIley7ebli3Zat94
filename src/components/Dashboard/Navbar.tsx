@@ -3,7 +3,6 @@ import { Bell, Search, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "react-router-dom";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Navbar = () => {
   const location = useLocation();
@@ -24,9 +23,6 @@ const Navbar = () => {
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="lg:hidden">
-              <SidebarTrigger />
-            </div>
             <h1 className="text-xl font-bold text-gray-800">{getPageTitle()}</h1>
             <div className="hidden md:flex relative max-w-md">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />

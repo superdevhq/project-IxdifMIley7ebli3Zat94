@@ -14,7 +14,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarTrigger
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
@@ -55,11 +54,10 @@ const AppSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="flex items-center justify-between p-4 h-16 border-b border-gray-200">
+      <SidebarHeader className="flex items-center p-4 h-16 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold text-blue-600">CRM</span>
         </div>
-        <SidebarTrigger />
       </SidebarHeader>
       
       <SidebarContent className="py-4">
