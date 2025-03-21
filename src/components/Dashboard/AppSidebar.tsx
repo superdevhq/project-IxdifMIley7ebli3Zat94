@@ -53,7 +53,7 @@ const AppSidebar = () => {
   ];
 
   return (
-    <Sidebar>
+    <Sidebar className="h-screen w-64 fixed">
       <SidebarHeader className="flex items-center p-4 h-16 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold text-blue-600">CRM</span>

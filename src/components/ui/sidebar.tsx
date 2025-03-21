@@ -24,7 +24,7 @@ export function Sidebar({ className, children, ...props }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "w-64 h-full flex flex-col bg-white border-r border-gray-200",
+        "h-full flex flex-col bg-white border-r border-gray-200",
         className
       )}
       {...props}
@@ -65,7 +65,6 @@ export function SidebarFooter({ className, children, ...props }: SidebarFooterPr
 }
 
 // This is just a placeholder to maintain API compatibility
-// It won't actually do anything in this implementation
 export function SidebarTrigger() {
   return null;
 }
