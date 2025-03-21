@@ -1,12 +1,11 @@
 
-import { Bell, Search, Settings, Menu } from "lucide-react";
+import { Bell, Search, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { useLocation } from "react-router-dom";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   
   // Get page title based on current route
@@ -25,14 +24,9 @@ const Navbar = () => {
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="lg:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            <div className="lg:hidden">
+              <SidebarTrigger />
+            </div>
             <h1 className="text-xl font-bold text-gray-800">{getPageTitle()}</h1>
             <div className="hidden md:flex relative max-w-md">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
